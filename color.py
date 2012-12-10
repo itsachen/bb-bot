@@ -33,8 +33,9 @@ def color_abbreviation(simple_color_name):
      'green': 'G',
      'blue': 'B',
      'purple': 'P',
+     'NONE': '#',
     }
-    return d.get(simple_color_name, "NONE")
+    return d.get(simple_color_name, "SHOULD_NOT_RETURN_THIS_VALUE")
 
 # Code snippet from stackoverflow user fraxel with slight modification
 # Source: http://stackoverflow.com/questions/9694165/convert-rgb-color-to-english-color-name-like-green

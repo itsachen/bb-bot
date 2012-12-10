@@ -24,13 +24,21 @@ class Board:
         for y_i in range(0,8):
             for x_i in range(0,8):
                 # mouse.move(self.topleft_x + 40*x_i,self.topleft_y + 40*y_i)
-                captured_color = sp.pixel_avg(self.topleft_x + 40*x_i,self.topleft_y + 40*y_i,2) # Might need to increase the bitmap
+                captured_color = sp.pixel_avg(self.topleft_x + 40*x_i,self.topleft_y + 40*y_i,3) # Might need to increase the bitmap
                 # print captured_color
                 # print color.get_simple_color_name(captured_color)
                 self.board_state[y_i][x_i] = color.color_abbreviation(color.get_simple_color_name(captured_color))
                 # time.sleep(.1)
                 
         self.print_board()
+
+    def scan_cell(self):
+        """Scans the cell at (x_initial,y_initial)"""
+
+        sp = screenpixel.ScreenPixel()
+        sp.capture()
+        captured_color = sp.pixel_avg(self.topleft_x,self.topleft_y,3)
+        print "RGB:" + `captured_color` + "\nColor:" + `color.get_simple_color_name(captured_color)`
 
     def print_board(self):
         """Prints the board""" # MAKE PRETTIER LATER

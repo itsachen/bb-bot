@@ -46,6 +46,7 @@ def calibrate_vertically(x, y):
 def main():
     board = Board()
     board.scan_board()
+    # board.scan_cell()
 
     # while True:
     #     alert.alert("Place mouse on top left corner and press ENTER")
