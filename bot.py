@@ -44,17 +44,17 @@ def calibrate_vertically(x, y):
   
 
 def main():
-    # board = initialize_board()
-    while True:
-        alert.alert("Place mouse on top left corner and press ENTER")
-        (x_initial, y_initial) = mouse.get_pos()
-        print "X:" + `x_initial` + " Y:" + `y_initial`
+    board = Board()
+    board.scan_board()
 
-        sp = screenpixel.ScreenPixel()
-        sp.capture()
-        captured_color = sp.pixel_avg(x_initial,y_initial)
-        print captured_color
-        print color.get_simple_color_name(captured_color)
+    # while True:
+    #     alert.alert("Place mouse on top left corner and press ENTER")
+    #     (x_initial, y_initial) = mouse.get_pos()
+    #     sp = screenpixel.ScreenPixel()
+    #     sp.capture()
+    #     captured_color = sp.pixel_avg(x_initial,y_initial)
+    #     print captured_color
+    #     print color.get_simple_color_name(captured_color)
 
     # calibrate_vertically(x_initial,y_initial)
     # (x, y) = calibrate_vertically(xTmp, yTmp)
