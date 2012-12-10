@@ -24,6 +24,18 @@ def simple_color(css21_color_name):
     }
     return d.get(css21_color_name, "NONE")
 
+def color_abbreviation(simple_color_name):
+    d = {'white': 'W',
+     'black': 'BL',
+     'red': 'R',
+     'orange': 'O',
+     'yellow': 'Y',
+     'green': 'G',
+     'blue': 'B',
+     'purple': 'P',
+    }
+    return d.get(simple_color_name, "NONE")
+
 # Code snippet from stackoverflow user fraxel with slight modification
 # Source: http://stackoverflow.com/questions/9694165/convert-rgb-color-to-english-color-name-like-green
 def closest_colour(requested_colour):
