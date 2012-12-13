@@ -15,7 +15,8 @@ START_PIXEL_COLOR = 0x4f3b3b
 START_PIXEL_COLOR_RIGHT = 0x352016
 START_PIXEL_COLOR_LEFT = 0x53393a
 
-MOUSE_MOVE_CLICK_DELAY = .2
+SWAP_CLICK_DELAY = .2
+NEXT_MOVE_DELAY = .1
 
 # raw_input("Press Enter to start...")
 
@@ -33,49 +34,57 @@ def make_move(((x,y),orient),board):
     mouse.move(board.topleft_x + 40*x,board.topleft_y + 40*y)
     time.sleep(.001)
     mouse.click()
-    time.sleep(MOUSE_MOVE_CLICK_DELAY)
+    time.sleep(SWAP_CLICK_DELAY)
     if orient == 1: #Right
         print "B"
         mouse.move(board.topleft_x + 40*(x+1),board.topleft_y + 40*y)
         time.sleep(.001)
         mouse.click()
-        time.sleep(MOUSE_MOVE_CLICK_DELAY)
+        time.sleep(NEXT_MOVE_DELAY)
     elif orient == -2:
         print "B"
         mouse.move(board.topleft_x + 40*x,board.topleft_y + 40*(y+1))
         time.sleep(.001)
         mouse.click()
-        time.sleep(MOUSE_MOVE_CLICK_DELAY)
+        time.sleep(NEXT_MOVE_DELAY)
 
 def main():
 
     board = Board()
-    board.scan_cell()
+    # board.scan_cell()
 
-    for cycle in range(0): #Number of moves
-        maxdepth = 4 
+    for cycle in range(99): #Number of rounds
+        maxdepth = 3 
         depth = 0
 
         board.scan_board()
 
         corrupted = board.corrupted_board()
+        rescan_count = 0
 
-        while corrupted:
+        while corrupted and rescan_count <= 10:
+            # Coin?
             print "Rescanning.."
             board.scan_board()
             corrupted = board.corrupted_board()
+            rescan_count += 1
 
         firstmove = Move(0,[("#","#")],("#","#"),0,board.board_state)
 
         movequeue = []
         movequeue.append(firstmove)
         maxmove = firstmove
+        queuecount = 0
 
         continue_generating = True
 
         # board.scan_cell()
         # set_trace()
+        print "Calculating moves..."
         while movequeue:
+            queuecount += 1
+            if queuecount > 1500:
+                break
             move = movequeue[0]
             movequeue = movequeue[1:]
 
