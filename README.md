@@ -5,3 +5,8 @@
 - Python 2.5+
 - autopy
 - webcolors
+
+## Todo
+- Improve vision system
+- Optimize
+- More strategies
