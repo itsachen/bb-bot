@@ -2,10 +2,11 @@
 
 import sys, math, time, random
 from autopy import *
-from board import Board
+from board import *
 import screenpixel
 import Quartz.CoreGraphics as CG
 import color
+from pudb import set_trace
 
 SLEEP_TIME = 0.2
 CELL_WIDTH = 40
@@ -47,6 +48,9 @@ def main():
     board = Board()
     board.scan_board()
     # board.scan_cell()
+    firstmove = Move(0,[],("#","#"),0,board.board_state)
+    # set_trace()
+    possible_moves(firstmove)
 
     # while True:
     #     alert.alert("Place mouse on top left corner and press ENTER")
