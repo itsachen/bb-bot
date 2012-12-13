@@ -37,7 +37,15 @@ class Board:
                 self.board_state[y_i][x_i] = color_abbreviation(get_simple_color_name(captured_color))
                 # time.sleep(.1)
                 
-        self.print_board()
+        # self.print_board() #DEBUG
+
+    def corrupted_board(self):
+        """The scan caught the board mid-transition resulting in a corrupted board"""
+        for row in self.board_state:
+            for cell in row:
+                if cell == "#":
+                    return True
+        return False
 
     def scan_cell(self):
         """Scans the cell at (x_initial,y_initial)"""
@@ -62,7 +70,7 @@ class Move:
 
   def __init__(self,d,prev_moves,current_move,points,board):
     self.depth = d
-    self.prev_moves = prev_moves
+    self.prev_moves = prev_moves # Tuple move
     self.current_move = current_move
     self.points = points
     self.board = board
@@ -78,13 +86,19 @@ def possible_moves(move):
                 newboard = deep_copy(move.board)
                 (new_points,return_board) = swap((x,y),orient,newboard)
                 if new_points != 0:
-                    oldlist = deep_copy(move.prev_moves)
-                    newmove = Move(move.depth+1,oldlist.append(move),((x,y),orient),move.points + new_points,return_board)
+                    # print "foo"
+                    # print move.prev_moves
+                    # set_trace()
+                    oldlist = move.prev_moves[:]
+                    oldlist += [((x,y),orient)]
+                    newmove = Move(move.depth+1,oldlist,((x,y),orient),move.points + new_points,return_board)
                     movelist.append(newmove)
 
-    print `len(movelist)` + " moves"
-    for m in movelist:
-        print "Move:" + `m.current_move` + " Points: " + `m.points`
+    # print `len(movelist)` + " moves"
+    # for m in movelist:
+    #     print "Move:" + `m.current_move` + " Points: " + `m.points`
+
+    return movelist
 
 def swap(gem_position,orientation,board):
     """Swaps gem at x,y with right or bottom gem, depending on orientation
@@ -94,8 +108,8 @@ def swap(gem_position,orientation,board):
     (x,y) = gem_position
     swapped_board = deep_copy(board)
 
-    if x == 5 and y == 3:
-        set_trace()
+    # if x == 5 and y == 3:
+    #     set_trace()
 
     # (x,y) is at a null space
     if board[y][x] == "#":
@@ -184,7 +198,7 @@ def compute_swap(gem_position,board):
     pattern_width = rightmost_position[0] - leftmost_position[0] + 1
     pattern_height = bottommost_position[1] - topmost_position[1] + 1
 
-    # BOTH?
+    # CROSS
     if (pattern_width >= 3) and (pattern_height >= 3):
         # COMPUTE CROSS SCORES AND SHIT
         points += 1000 # @# TODO: DOUBLE CHECK SCORES
@@ -196,15 +210,16 @@ def compute_swap(gem_position,board):
                 changed_board[y_shift+1][x_shift] = board[y_shift][x_shift]
             for x_shift in range(x+1,rightmost_position[0]+1):
                 changed_board[y_shift+1][x_shift] = board[y_shift][x_shift]
-        for y_shift in range(y-pattern_height,-1,-1): # Vertical pattern shifting
-            changed_board[y_shift+pattern_height][x] = board[y_shift][x]
+        for y_shift in range(bottommost_position[1]-pattern_height,-1,-1): # Vertical pattern shifting
+            changed_board[y_shift+pattern_height-1][x] = board[y_shift][x]
+        changed_board[bottommost_position[1]][x] = root_color + "C"
 
         # FILL EMPTY SPACES
         for x_fill in range(leftmost_position[0],x): # Horizontal left
             changed_board[0][x_fill] = "#"
         for x_fill in range(x+1,rightmost_position[0]+1): # Horizontal right
             changed_board[0][x_fill] = "#"
-        for y_fill in range(0,pattern_height): # Vertical
+        for y_fill in range(0,pattern_height-1): # Vertical
             changed_board[y_fill][x] = "#"
 
     # 3 or more horizontal?
@@ -212,33 +227,68 @@ def compute_swap(gem_position,board):
         # ASSIGN POINTS
         if pattern_width == 3:
             points += 250
+            for y_shift in range(y-1,-1,-1):
+                for x_shift in range(leftmost_position[0],rightmost_position[0]+1):
+                    changed_board[y_shift+1][x_shift] = board[y_shift][x_shift]
+            # FILL EMPTY SPACES WITH #'s
+            for x_fill in range(leftmost_position[0],rightmost_position[0]+1):
+                changed_board[0][x_fill] = "#"
         elif pattern_width == 4: #FLAME
             points += 500
+            for y_shift in range(y-1,-1,-1):
+                for x_shift in range(leftmost_position[0],x):
+                    changed_board[y_shift+1][x_shift] = board[y_shift][x_shift]
+                for x_shift in range(x+1,rightmost_position[0]+1):
+                     changed_board[y_shift+1][x_shift] = board[y_shift][x_shift]
+                changed_board[y][x] = root_color + "F"
+            # FILL EMPTY SPACES WITH #'s
+            for x_fill in range(leftmost_position[0],x):
+                changed_board[0][x_fill] = "#"
+            for x_fill in range(x+1,rightmost_position[0]+1):
+                changed_board[0][x_fill] = "#"
         elif pattern_width == 5: #HYPER
-            points += 750 # @# TODO: DOUBLE CHECK SCORES, ADD SPECIAL GEMS
-        # MOVE CELLS
-        for y_shift in range(y-1,-1,-1):
-            for x_shift in range(leftmost_position[0],rightmost_position[0]+1):
-                changed_board[y_shift+1][x_shift] = board[y_shift][x_shift]
-        # FILL EMPTY SPACES WITH #'s
-        for x_fill in range(leftmost_position[0],rightmost_position[0]+1):
-            changed_board[0][x_fill] = "#"
+            points += 2500 # @# TODO: DOUBLE CHECK SCORES, ADD SPECIAL GEMS
+            for y_shift in range(y-1,-1,-1):
+                for x_shift in range(leftmost_position[0],x):
+                    changed_board[y_shift+1][x_shift] = board[y_shift][x_shift]
+                for x_shift in range(x+1,rightmost_position[0]+1):
+                     changed_board[y_shift+1][x_shift] = board[y_shift][x_shift]
+                changed_board[y][x] = root_color + "H"
+            # FILL EMPTY SPACES WITH #'s
+            for x_fill in range(leftmost_position[0],x):
+                changed_board[0][x_fill] = "#"
+            for x_fill in range(x+1,rightmost_position[0]+1):
+                changed_board[0][x_fill] = "#"
 
     # 3 or more veritcal
     elif pattern_height >= 3:
         # ASSIGN POINTS
         if pattern_height == 3:
             points += 250
+            # Move cells
+            for y_shift in range(bottommost_position[1] - pattern_height,-1,-1):
+                changed_board[y_shift+pattern_height][x] = board[y_shift][x]
+            # FILL EMPTY SPACES WITH #'s
+            for y_fill in range(0,pattern_height):
+                changed_board[y_fill][x] = "#"
         elif pattern_height == 4: #FLAME
             points += 500
+            # Move cells
+            for y_shift in range(bottommost_position[1] - pattern_height,-1,-1):
+                changed_board[y_shift+pattern_height-1][x] = board[y_shift][x]
+            changed_board[bottommost_position[1]][x] = root_color + "F"
+            # FILL EMPTY SPACES WITH #'s
+            for y_fill in range(0,pattern_height-1):
+                changed_board[y_fill][x] = "#"            
         elif pattern_height == 5: #HYPER
-            points += 750 # @# DOUBLE CHECK SCORES
-        # Move cells
-        for y_shift in range(y- pattern_height,-1,-1):
-            changed_board[y_shift+pattern_height][x] = board[y_shift][x]
-        # FILL EMPTY SPACES WITH #'s
-        for y_fill in range(0,pattern_height):
-            changed_board[y_fill][x] = "#"
+            points += 2500 # @# DOUBLE CHECK SCORES
+            # Move cells
+            for y_shift in range(bottommost_position[1] - pattern_height,-1,-1):
+                changed_board[y_shift+pattern_height-1][x] = board[y_shift][x]
+            changed_board[bottommost_position[1]][x] = root_color + "H"
+            # FILL EMPTY SPACES WITH #'s
+            for y_fill in range(0,pattern_height-1):
+                changed_board[y_fill][x] = "#"        
 
     return (points,changed_board)
 

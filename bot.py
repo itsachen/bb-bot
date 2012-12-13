@@ -15,6 +15,8 @@ START_PIXEL_COLOR = 0x4f3b3b
 START_PIXEL_COLOR_RIGHT = 0x352016
 START_PIXEL_COLOR_LEFT = 0x53393a
 
+MOUSE_MOVE_CLICK_DELAY = .2
+
 # raw_input("Press Enter to start...")
 
 # region = CG.CGRectMake(mouse.get_pos()[0], mouse.get_pos()[1], 100, 100)
@@ -25,54 +27,75 @@ START_PIXEL_COLOR_LEFT = 0x53393a
 # print "R: " + `result[0]` + " G: " + `result[1]` + " B: " + `result[2]`
 
 # print "ALL YOUR BASE ARE BELONG TO US"
-
-def calibrate_vertically(x, y):
-  region = CG.CGRectMake(0,0, 900, 900)
-  sp = screenpixel.ScreenPixel()
-  sp.capture(region=region)
-  final = (0,0)
-  for i in range (0, 20):
-    for j in range (-10, 10):
-        p1 = sp.pixel(x + j, y - i)
-        mouse.move(x + j, y - i)
-        # print hex(color.rgb_to_hex(p1[0],p1[1],p1[2]))
-        if (hex(color.rgb_to_hex(p1[0],p1[1],p1[2])) == hex(START_PIXEL_COLOR)):
-            print "Match!"
-            p2 = sp.pixel(x + j + 1, y - i)
-            if (hex(color.rgb_to_hex(p2[0],p2[1],p2[2])) == hex(START_PIXEL_COLOR_RIGHT)):
-                final = (x + j + 1, y - i - 1)
-  mouse.move(final[0],final[1])
   
+def make_move(((x,y),orient),board):
+    print "A"
+    mouse.move(board.topleft_x + 40*x,board.topleft_y + 40*y)
+    time.sleep(.001)
+    mouse.click()
+    time.sleep(MOUSE_MOVE_CLICK_DELAY)
+    if orient == 1: #Right
+        print "B"
+        mouse.move(board.topleft_x + 40*(x+1),board.topleft_y + 40*y)
+        time.sleep(.001)
+        mouse.click()
+        time.sleep(MOUSE_MOVE_CLICK_DELAY)
+    elif orient == -2:
+        print "B"
+        mouse.move(board.topleft_x + 40*x,board.topleft_y + 40*(y+1))
+        time.sleep(.001)
+        mouse.click()
+        time.sleep(MOUSE_MOVE_CLICK_DELAY)
 
 def main():
+
     board = Board()
-    board.scan_board()
-    # board.scan_cell()
-    firstmove = Move(0,[],("#","#"),0,board.board_state)
-    # set_trace()
-    possible_moves(firstmove)
+    board.scan_cell()
 
-    # while True:
-    #     alert.alert("Place mouse on top left corner and press ENTER")
-    #     (x_initial, y_initial) = mouse.get_pos()
-    #     sp = screenpixel.ScreenPixel()
-    #     sp.capture()
-    #     captured_color = sp.pixel_avg(x_initial,y_initial)
-    #     print captured_color
-    #     print color.get_simple_color_name(captured_color)
+    for cycle in range(0): #Number of moves
+        maxdepth = 4 
+        depth = 0
 
-    # calibrate_vertically(x_initial,y_initial)
-    # (x, y) = calibrate_vertically(xTmp, yTmp)
-    # if ( (x, y) == (0, 0)):
-    #     print ("Couldn't find initial pixel for calibrate")
-    #     return
-    # else:
-    #     print ("Found starting pixel at (%d, %d)" % (x, y))
+        board.scan_board()
 
-    # for i in range (1, 10000):
-    #     scan_board(board, x, y)
-    #     make_move(board, x, y)
-    #     time.sleep(SLEEP_TIME)
+        corrupted = board.corrupted_board()
+
+        while corrupted:
+            print "Rescanning.."
+            board.scan_board()
+            corrupted = board.corrupted_board()
+
+        firstmove = Move(0,[("#","#")],("#","#"),0,board.board_state)
+
+        movequeue = []
+        movequeue.append(firstmove)
+        maxmove = firstmove
+
+        continue_generating = True
+
+        # board.scan_cell()
+        # set_trace()
+        while movequeue:
+            move = movequeue[0]
+            movequeue = movequeue[1:]
+
+            if move.depth > depth:
+                depth = move.depth
+            if depth >= maxdepth:
+                continue_generating = False
+            if move.points > maxmove.points:
+                maxmove = move
+
+            if continue_generating:
+                movequeue += possible_moves(move)
+
+        for m in maxmove.prev_moves[1:]:
+            print m
+            make_move(m,board)
+
+        # print maxmove.prev_moves
+        # print maxmove.points
+
 
 # This is the standar boilerplate that calls the main() function
 if __name__ == '__main__':
